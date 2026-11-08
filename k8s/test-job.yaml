@@ -1,0 +1,21 @@
+﻿apiVersion: batch/v1
+kind: Job
+metadata:
+  name: qa-smoke-tests
+  labels:
+    app: qa-infra
+    component: tests
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: qa-infra
+        component: tests
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: pytest-runner
+          image: qa-infra-tests:latest
+          imagePullPolicy: IfNotPresent
+          command: ["pytest", "tests/", "-v", "--junitxml=/app/reports/junit.xml"]

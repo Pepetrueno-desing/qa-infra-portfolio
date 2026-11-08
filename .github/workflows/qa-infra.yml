@@ -1,0 +1,32 @@
+﻿name: QA Infra CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-tests:
+    name: Build image and run pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t qa-infra-tests:ci .
+
+      - name: Run tests inside container
+        run: |
+          mkdir -p reports
+          docker run --rm -v "${{ github.workspace }}/reports:/app/reports" qa-infra-tests:ci
+
+      - name: Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-junit-report
+          path: reports/junit.xml
+          if-no-files-found: warn
